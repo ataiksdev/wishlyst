@@ -27,6 +27,12 @@ from pydantic import BaseModel, EmailStr
 
 limiter = Limiter(key_func=get_remote_address)
 
+# index.py — replace the limiter setup with this:
+def get_limit(limit_string: str) -> str:
+    if os.environ.get("ENV") == "test":
+        return "10000/minute"
+    return limit_string
+
 # ── Pydantic Models ──────────────────────────────────────────────────
 
 class UserRegister(BaseModel):
@@ -281,7 +287,7 @@ def _extract_price(text: str) -> Optional[float]:
         return None
 
 @app.post("/api/scrape")
-@limiter.limit("30/minute")
+@limiter.limit(get_limit("30/minute"))
 async def scrape_url(request: Request, body: ScrapeRequest, user=Depends(get_current_user)):
     """Scrape product details from an e-commerce URL."""
     url = body.url.strip()
@@ -429,7 +435,7 @@ async def scrape_url(request: Request, body: ScrapeRequest, user=Depends(get_cur
 # ── Auth Endpoints ───────────────────────────────────────────────────
 
 @app.post("/api/auth/register")
-@limiter.limit("5/hour")
+@limiter.limit(get_limit("500/hour"))
 async def register(request: Request, body: UserRegister, response: Response, db=Depends(get_db)):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE email = %s", (body.email,))
@@ -469,7 +475,7 @@ async def register(request: Request, body: UserRegister, response: Response, db=
     }
 
 @app.post("/api/auth/login")
-@limiter.limit("10/minute")
+@limiter.limit(get_limit("10/minute"))
 async def login(request: Request, body: UserLogin, response: Response, db=Depends(get_db)):
     cur = db.cursor()
     cur.execute("SELECT id, email, name, password_hash FROM users WHERE email = %s", (body.email,))
@@ -515,7 +521,7 @@ async def logout(
     return {"status": "ok"}
 
 @app.get("/api/auth/me")
-@limiter.limit("60/minute")
+@limiter.limit(get_limit("60/minute"))
 async def get_me(request: Request, user=Depends(get_current_user)):
     return {"id": str(user["id"]), "email": user["email"], "name": user["name"], "is_admin": user.get("is_admin", False)}
 
