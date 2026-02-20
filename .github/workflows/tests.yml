@@ -1,0 +1,160 @@
+# .github/workflows/tests.yml
+#
+# LESSON: GitHub Actions CI/CD
+#
+# This workflow file tells GitHub:
+#   "Whenever code is pushed or a PR is opened, run our test suite."
+#
+# Key concepts:
+#   - trigger (on:)       → when does this workflow fire?
+#   - jobs                → what machines/environments do we need?
+#   - steps               → what commands run, in order?
+#   - services            → spin up Docker containers (e.g. Postgres)
+#   - defaults.run.working-directory → run all commands inside backend/
+#                           so you don't need to prefix every path
+
+name: Wishlyst Test Suite
+
+on:
+  # Run on every push to any branch
+  push:
+    branches: ["**"]
+  # Run on every pull request targeting main
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest   # GitHub's free Linux runner
+
+    # ── LESSON: default working directory ────────────────────────────
+    # Instead of writing `cd backend && <command>` on every step,
+    # we set the default working directory once here.
+    # Every `run:` block below will execute from inside backend/.
+    defaults:
+      run:
+        working-directory: backend
+
+    # ── Services ─────────────────────────────────────────────────────
+    # GitHub Actions can spin up Docker containers alongside your job.
+    # Here we start a real Postgres database for tests to use.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wishlyst
+          POSTGRES_PASSWORD: wishlyst
+          POSTGRES_DB: wishlyst_test
+        # These options tell GitHub to wait until Postgres is ready
+        # before starting the job steps.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      # ── Step 1: Check out your code ──────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Step 2: Set up Python ────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"   # caches pip downloads to speed up future runs
+
+      # ── Step 3: Install API + test dependencies ───────────────────
+      # Both files live in backend/, which is our working directory.
+      - name: Install API dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install test dependencies
+        run: pip install pytest pytest-asyncio httpx pytest-html
+
+      # ── Step 4: Run DB migrations ─────────────────────────────────
+      # Runs backend/scripts/migrate_all.py which applies all SQL files
+      # in backend/scripts/ in order (001-create-schema.sql, 002-..., etc.)
+      # Must run from inside backend/ — which is already our working directory.
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://wishlyst:wishlyst@localhost:5432/wishlyst_test
+        run: python scripts/migrate_all.py
+
+      # ── Step 5: Start the FastAPI server in the background ───────
+      # Note: the module path is api.index because we're running
+      # from inside backend/, and the file is backend/api/index.py
+      - name: Start API server
+        env:
+          DATABASE_URL: postgresql://wishlyst:wishlyst@localhost:5432/wishlyst_test
+          ENV: test
+        run: |
+          uvicorn api.index:app --host 0.0.0.0 --port 8000 &
+          # Wait for the server to be ready before running tests
+          sleep 3
+
+      # ── Step 6: Run smoke tests first ────────────────────────────
+      # Smoke tests are fast and catch big obvious failures immediately.
+      # If they fail, we don't bother running the full suite.
+      - name: Run smoke tests
+        env:
+          BASE_URL: http://localhost:8000
+        run: pytest -m smoke -v --tb=short
+
+      # ── Step 7: Run the full test suite ──────────────────────────
+      - name: Run full API test suite
+        env:
+          BASE_URL: http://localhost:8000
+        run: |
+          mkdir -p reports
+          pytest tests/api/ \
+            -v \
+            --tb=short \
+            --html=reports/test-report.html \
+            --self-contained-html
+
+      # ── Step 8: Upload the HTML report as a build artifact ───────
+      # Even if tests fail, the report gets uploaded so you can
+      # download and inspect it from the GitHub Actions UI.
+      # Note: upload-artifact paths are always relative to repo root,
+      # NOT the working-directory — so we prefix with backend/ here.
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()   # upload even if previous steps failed
+        with:
+          name: api-test-report
+          path: backend/reports/test-report.html
+          retention-days: 14
+
+  # ── UI Tests Job (Phase 2 — uncomment when ready) ──────────────────
+  # ui-tests:
+  #   name: UI Tests
+  #   runs-on: ubuntu-latest
+  #   needs: api-tests   # only run if API tests pass
+  #   defaults:
+  #     run:
+  #       working-directory: backend
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.12"
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install pytest pytest-asyncio httpx pytest-html playwright pytest-playwright
+  #         playwright install chromium
+  #     - name: Run UI tests
+  #       run: |
+  #         mkdir -p reports
+  #         pytest tests/ui/ -v --html=reports/ui-report.html --self-contained-html
+  #     - name: Upload UI report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: ui-test-report
+  #         path: backend/reports/ui-report.html
