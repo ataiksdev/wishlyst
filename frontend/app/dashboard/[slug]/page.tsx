@@ -19,6 +19,9 @@ import {
     Tag,
     User,
     Heart,
+    Link2,
+    Sparkles,
+    AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { copyToClipboard } from "@/lib/utils"
@@ -49,8 +52,10 @@ import {
     addItem,
     updateItem,
     deleteItem,
+    scrapeUrl,
     type WishlistDetail,
     type WishlistItem,
+    type ScrapeResult,
 } from "@/lib/api"
 
 export default function WishlistDetailPage() {
@@ -65,6 +70,7 @@ export default function WishlistDetailPage() {
 
     // Add item dialog
     const [addOpen, setAddOpen] = useState(false)
+    const [addTab, setAddTab] = useState<"url" | "manual">("url")
     const [itemName, setItemName] = useState("")
     const [itemPrice, setItemPrice] = useState("")
     const [itemCurrency, setItemCurrency] = useState("NGN")
@@ -72,6 +78,12 @@ export default function WishlistDetailPage() {
     const [itemUrl, setItemUrl] = useState("")
     const [itemImageUrl, setItemImageUrl] = useState("")
     const [adding, setAdding] = useState(false)
+
+    // URL scrape state
+    const [scrapeInput, setScrapeInput] = useState("")
+    const [scraping, setScraping] = useState(false)
+    const [scrapePreview, setScrapePreview] = useState<ScrapeResult | null>(null)
+    const [scrapeError, setScrapeError] = useState("")
 
     // Edit item dialog
     const [editOpen, setEditOpen] = useState(false)
@@ -111,6 +123,10 @@ export default function WishlistDetailPage() {
         setItemTag("")
         setItemUrl("")
         setItemImageUrl("")
+        setScrapeInput("")
+        setScrapePreview(null)
+        setScrapeError("")
+        setAddTab("url")
     }
 
     function ensureUrl(url: string): string {
@@ -119,6 +135,28 @@ export default function WishlistDetailPage() {
             return `https://${url}`
         }
         return url
+    }
+
+    async function handleScrape(e: React.FormEvent) {
+        e.preventDefault()
+        if (!scrapeInput.trim()) return
+        setScraping(true)
+        setScrapeError("")
+        setScrapePreview(null)
+        try {
+            const result = await scrapeUrl(scrapeInput.trim())
+            setScrapePreview(result)
+            // Pre-fill the manual form fields
+            setItemName(result.name || "")
+            setItemPrice(result.price ? String(result.price) : "")
+            setItemCurrency(result.currency || "NGN")
+            setItemUrl(result.url || scrapeInput.trim())
+            setItemImageUrl(result.image_url || "")
+        } catch (err: any) {
+            setScrapeError(err.message || "Could not fetch product details")
+        } finally {
+            setScraping(false)
+        }
     }
 
     async function handleAddItem(e: React.FormEvent) {
@@ -307,7 +345,7 @@ export default function WishlistDetailPage() {
                             {copied ? "Copied!" : "Copy Link"}
                         </Button>
 
-                        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+                        <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetAddForm() }}>
                             <DialogTrigger asChild>
                                 <Button
                                     size="sm"
@@ -317,15 +355,139 @@ export default function WishlistDetailPage() {
                                     Add Item
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <form onSubmit={handleAddItem}>
-                                    <DialogHeader>
-                                        <DialogTitle>Add an item</DialogTitle>
-                                        <DialogDescription>
-                                            Add something you&apos;d love to receive.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="flex flex-col gap-4 py-4">
+                            <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Add an item</DialogTitle>
+                                    <DialogDescription>
+                                        Paste a product link or fill in details manually.
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                {/* Tab switcher */}
+                                <div className="flex rounded-lg border border-border overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAddTab("url")}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${addTab === "url"
+                                                ? "bg-foreground text-background"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            }`}
+                                    >
+                                        <Link2 className="h-3.5 w-3.5" />
+                                        Paste Link
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAddTab("manual")}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${addTab === "manual"
+                                                ? "bg-foreground text-background"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            }`}
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                        Manual
+                                    </button>
+                                </div>
+
+                                {/* ── URL Tab ── */}
+                                {addTab === "url" && (
+                                    <div className="flex flex-col gap-4">
+                                        <form onSubmit={handleScrape} className="flex gap-2">
+                                            <Input
+                                                placeholder="https://temu.com/product..."
+                                                value={scrapeInput}
+                                                onChange={(e) => setScrapeInput(e.target.value)}
+                                                className="bg-card border-border flex-1"
+                                                autoFocus
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={scraping || !scrapeInput.trim()}
+                                                className="bg-foreground text-background hover:bg-foreground/90 shrink-0"
+                                            >
+                                                {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                            </Button>
+                                        </form>
+
+                                        {scrapeError && (
+                                            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2.5">
+                                                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="font-medium">Couldn&apos;t fetch details</p>
+                                                    <p className="text-xs mt-0.5 opacity-80">{scrapeError}</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setAddTab("manual")}
+                                                        className="text-xs underline mt-1 opacity-80 hover:opacity-100"
+                                                    >
+                                                        Fill in manually instead →
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {scrapePreview && (
+                                            <div className="rounded-xl border border-border bg-card overflow-hidden">
+                                                {scrapePreview.image_url && (
+                                                    <div className="relative h-40 bg-muted">
+                                                        <img
+                                                            src={scrapePreview.image_url}
+                                                            alt={scrapePreview.name}
+                                                            className="w-full h-full object-contain"
+                                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="p-3 flex flex-col gap-1">
+                                                    <p className="font-medium text-sm line-clamp-2 text-foreground">
+                                                        {scrapePreview.name || "(No title found)"}
+                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        {scrapePreview.price ? (
+                                                            <span className="text-sm font-semibold text-accent">
+                                                                {scrapePreview.currency} {scrapePreview.price.toLocaleString()}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">Price not detected</span>
+                                                        )}
+                                                        <span className="text-xs text-muted-foreground">{scrapePreview.source_domain}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!scrapePreview && !scrapeError && !scraping && (
+                                            <p className="text-xs text-muted-foreground text-center py-4">
+                                                Paste a product URL from Temu, Amazon, Jumia, or any store and we&apos;ll fill in the details automatically.
+                                            </p>
+                                        )}
+
+                                        {scrapePreview && (
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="flex-1 border-border"
+                                                    onClick={() => setAddTab("manual")}
+                                                >
+                                                    Edit Details
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    className="flex-1 bg-foreground text-background hover:bg-foreground/90"
+                                                    disabled={adding}
+                                                    onClick={() => handleAddItem({ preventDefault: () => { } } as React.FormEvent)}
+                                                >
+                                                    {adding ? "Adding..." : "Add to Wishlist"}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* ── Manual Tab ── */}
+                                {addTab === "manual" && (
+                                    <form onSubmit={handleAddItem} className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="item-name">Name</Label>
                                             <Input
@@ -366,9 +528,7 @@ export default function WishlistDetailPage() {
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="item-tag">
                                                 Tag{" "}
-                                                <span className="text-muted-foreground font-normal">
-                                                    (optional)
-                                                </span>
+                                                <span className="text-muted-foreground font-normal">(optional)</span>
                                             </Label>
                                             <Input
                                                 id="item-tag"
@@ -381,9 +541,7 @@ export default function WishlistDetailPage() {
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="item-url">
                                                 Link{" "}
-                                                <span className="text-muted-foreground font-normal">
-                                                    (optional)
-                                                </span>
+                                                <span className="text-muted-foreground font-normal">(optional)</span>
                                             </Label>
                                             <Input
                                                 id="item-url"
@@ -397,9 +555,7 @@ export default function WishlistDetailPage() {
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="item-image">
                                                 Image URL{" "}
-                                                <span className="text-muted-foreground font-normal">
-                                                    (optional)
-                                                </span>
+                                                <span className="text-muted-foreground font-normal">(optional)</span>
                                             </Label>
                                             <Input
                                                 id="item-image"
@@ -410,22 +566,20 @@ export default function WishlistDetailPage() {
                                                 className="bg-card border-border"
                                             />
                                         </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button type="button" variant="ghost">
-                                                Cancel
+                                        <div className="flex gap-2 pt-1">
+                                            <DialogClose asChild>
+                                                <Button type="button" variant="ghost" className="flex-1">Cancel</Button>
+                                            </DialogClose>
+                                            <Button
+                                                type="submit"
+                                                className="flex-1 bg-foreground text-background hover:bg-foreground/90"
+                                                disabled={adding || !itemName.trim()}
+                                            >
+                                                {adding ? "Adding..." : "Add Item"}
                                             </Button>
-                                        </DialogClose>
-                                        <Button
-                                            type="submit"
-                                            className="bg-foreground text-background hover:bg-foreground/90"
-                                            disabled={adding || !itemName.trim()}
-                                        >
-                                            {adding ? "Adding..." : "Add Item"}
-                                        </Button>
-                                    </DialogFooter>
-                                </form>
+                                        </div>
+                                    </form>
+                                )}
                             </DialogContent>
                         </Dialog>
                     </div>

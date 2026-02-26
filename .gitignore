@@ -82,4 +82,11 @@ Thumbs.db
 .DS_Store
 wishlyst.code-workspace
 
+# Testing
+backend/reports/
+
+
 to-add.md
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
