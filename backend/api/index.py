@@ -464,8 +464,8 @@ async def register(request: Request, body: UserRegister, response: Response, db=
         key="session_token",
         value=token,
         httponly=True,
-        secure=os.environ.get("ENV", "development") == "production",
-        samesite="lax",
+        secure=True, # Must be True for samesite="none"
+        samesite="none", # Allow cross-site cookies
         max_age=30 * 24 * 60 * 60 # 30 days
     )
 
