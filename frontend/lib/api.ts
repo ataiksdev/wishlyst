@@ -1,4 +1,4 @@
-const BASE = "";
+const BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 // Helper to get token is no longer needed as we use cookies
 // function getToken(): string | null { ... }
