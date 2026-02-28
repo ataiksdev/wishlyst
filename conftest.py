@@ -101,10 +101,11 @@ def auth_client(base_url, registered_user):
     """
     client = httpx.Client(base_url=base_url, timeout=10.0)
     # Login to get a fresh session cookie
-    client.post("/api/auth/login", json={
+    response = client.post("/api/auth/login", json={
         "email": registered_user["credentials"]["email"],
         "password": registered_user["credentials"]["password"],
     })
+    assert response.status_code == 200, f"Auth client login failed: {response.text}"
     yield client
     client.close()
 
