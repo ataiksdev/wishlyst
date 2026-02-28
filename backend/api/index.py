@@ -140,25 +140,78 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
     return response
 
+# ── Middlewares ──────────────────────────────────────────────────────
+
+# Define allowed origins for CORS
+# This is required when allow_credentials=True
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://wishlyst-fe-production.up.railway.app",
+    "https://wishlyst.up.railway.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for production deployment
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Global Exception Handler for debugging
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, StarletteHTTPException):
+        return Response(
+            content=exc.detail if isinstance(exc.detail, str) else str(exc.detail),
+            status_code=exc.status_code
+        )
+    
+    import traceback
+    print(f"ERROR: Unhandled exception in {request.url.path}")
+    print(traceback.format_exc())
+    return Response(
+        content=f"Internal Server Error: {str(exc)}",
+        status_code=500
+    )
+
+@app.middleware("http")
+async def log_cookies(request: Request, call_next):
+    # Debug: log if session token is present in request
+    # token = request.cookies.get("session_token")
+    # if token:
+    #     print(f"DEBUG: session_token found in request to {request.url.path}")
+    # else:
+    #     print(f"DEBUG: No session_token in request to {request.url.path}")
+    return await call_next(request)
+
 # ── Database Connection ──────────────────────────────────────────────
 
 def get_db():
-    conn = psycopg2.connect(
-        os.environ["DATABASE_URL"],
-        cursor_factory=psycopg2.extras.RealDictCursor,
-    )
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        print("ERROR: DATABASE_URL not set in environment variables")
+        raise HTTPException(status_code=500, detail="Database configuration missing")
+    
+    # Handle postgres:// vs postgresql:// if needed
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
     try:
+        conn = psycopg2.connect(
+            db_url,
+            cursor_factory=psycopg2.extras.RealDictCursor,
+        )
         yield conn
+    except psycopg2.Error as e:
+        print(f"DATABASE CONNECTION ERROR: {e}")
+        raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
     finally:
-        conn.close()
+        if 'conn' in locals() and conn:
+            conn.close()
 
 # ── Auth Helpers ─────────────────────────────────────────────────────
 
@@ -460,12 +513,19 @@ async def register(request: Request, body: UserRegister, response: Response, db=
     db.commit()
 
     # Set HTTP-only cookie
+    # Force Secure and SameSite=None for any https or production environment
+    is_prod = os.environ.get("ENV", "development") == "production"
+    # If we appear to be on a public link (not localhost), use production cookie settings
+    is_remote = "localhost" not in str(request.base_url) and "127.0.0.1" not in str(request.base_url)
+    
+    use_secure = is_prod or is_remote
+    
     response.set_cookie(
         key="session_token",
         value=token,
         httponly=True,
-        secure=True, # Must be True for samesite="none"
-        samesite="none", # Allow cross-site cookies
+        secure=use_secure,
+        samesite="none" if use_secure else "lax",
         max_age=30 * 24 * 60 * 60 # 30 days
     )
 
@@ -492,12 +552,17 @@ async def login(request: Request, body: UserLogin, response: Response, db=Depend
     db.commit()
 
     # Set HTTP-only cookie
+    is_prod = os.environ.get("ENV", "development") == "production"
+    is_remote = "localhost" not in str(request.base_url) and "127.0.0.1" not in str(request.base_url)
+    
+    use_secure = is_prod or is_remote
+    
     response.set_cookie(
         key="session_token",
         value=token,
         httponly=True,
-        secure=os.environ.get("ENV", "development") == "production",
-        samesite="lax",
+        secure=use_secure,
+        samesite="none" if use_secure else "lax",
         max_age=30 * 24 * 60 * 60
     )
 

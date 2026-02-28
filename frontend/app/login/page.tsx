@@ -6,6 +6,7 @@ import { Gift, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login as apiLogin } from "@/lib/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -20,23 +21,15 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+      // Use the helper from lib/api instead of manual fetch
+      // This ensures we use correct credentials and BASE URL settings
+      await apiLogin(email, password)
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.detail || "Login failed. Please try again.")
-        return
-      }
-
-      localStorage.setItem("token", data.token)
+      // Redirect to dashboard on success
       window.location.href = "/dashboard"
-    } catch {
-      setError("Something went wrong. Please try again.")
+    } catch (err: any) {
+      console.error("Login detail:", err)
+      setError(err.message || "Something went wrong. Please try again.")
     } finally {
       setLoading(false)
     }

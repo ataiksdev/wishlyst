@@ -22,9 +22,17 @@ import {
     Link2,
     Sparkles,
     AlertCircle,
+    Coins,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { copyToClipboard } from "@/lib/utils"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import {
     Card,
     CardContent,
@@ -369,8 +377,8 @@ export default function WishlistDetailPage() {
                                         type="button"
                                         onClick={() => setAddTab("url")}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${addTab === "url"
-                                                ? "bg-foreground text-background"
-                                                : "text-muted-foreground hover:text-foreground"
+                                            ? "bg-foreground text-background"
+                                            : "text-muted-foreground hover:text-foreground"
                                             }`}
                                     >
                                         <Link2 className="h-3.5 w-3.5" />
@@ -380,8 +388,8 @@ export default function WishlistDetailPage() {
                                         type="button"
                                         onClick={() => setAddTab("manual")}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${addTab === "manual"
-                                                ? "bg-foreground text-background"
-                                                : "text-muted-foreground hover:text-foreground"
+                                            ? "bg-foreground text-background"
+                                            : "text-muted-foreground hover:text-foreground"
                                             }`}
                                     >
                                         <Plus className="h-3.5 w-3.5" />
@@ -515,14 +523,17 @@ export default function WishlistDetailPage() {
                                             </div>
                                             <div className="flex flex-col gap-2">
                                                 <Label htmlFor="item-currency">Currency</Label>
-                                                <Input
-                                                    id="item-currency"
-                                                    placeholder="NGN"
-                                                    value={itemCurrency}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setItemCurrency(e.target.value.toUpperCase())}
-                                                    maxLength={3}
-                                                    className="bg-card border-border"
-                                                />
+                                                <Select value={itemCurrency} onValueChange={setItemCurrency}>
+                                                    <SelectTrigger id="item-currency" className="bg-card border-border">
+                                                        <SelectValue placeholder="NGN" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="NGN">NGN (₦)</SelectItem>
+                                                        <SelectItem value="USD">USD ($)</SelectItem>
+                                                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                                                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-2">
@@ -758,13 +769,17 @@ export default function WishlistDetailPage() {
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <Label htmlFor="edit-item-currency">Currency</Label>
-                                    <Input
-                                        id="edit-item-currency"
-                                        value={editCurrency}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditCurrency(e.target.value.toUpperCase())}
-                                        maxLength={3}
-                                        className="bg-card border-border"
-                                    />
+                                    <Select value={editCurrency} onValueChange={setEditCurrency}>
+                                        <SelectTrigger id="edit-item-currency" className="bg-card border-border">
+                                            <SelectValue placeholder="NGN" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="NGN">NGN (₦)</SelectItem>
+                                            <SelectItem value="USD">USD ($)</SelectItem>
+                                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                                            <SelectItem value="GBP">GBP (£)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-2">

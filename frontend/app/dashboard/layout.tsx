@@ -23,15 +23,10 @@ export default function DashboardLayout({
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const token = localStorage.getItem("token")
-        if (!token) {
-            router.replace("/login")
-            return
-        }
+        setLoading(true)
         getMe()
             .then(setUser)
             .catch(() => {
-                localStorage.removeItem("token")
                 router.replace("/login")
             })
             .finally(() => setLoading(false))
