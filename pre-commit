@@ -1,0 +1,53 @@
+#!/bin/sh
+# .git/hooks/pre-commit
+#
+# Runs smoke tests before every commit.
+# If any smoke test fails, the commit is blocked.
+#
+# To skip in an emergency: git commit --no-verify -m "your message"
+# (use sparingly — this bypasses the safety net)
+
+echo ""
+echo "🔍 Running smoke tests before commit..."
+echo ""
+
+# Navigate to backend where pytest.ini lives
+cd backend || exit 1
+
+# Check if the API server is running by hitting the health endpoint
+if ! curl -s http://localhost:8000/api/health > /dev/null 2>&1; then
+  echo "⚠️  API server is not running at http://localhost:8000"
+  echo "   Start it with: cd backend && uvicorn api.index:app --reload"
+  echo "   Then commit again. Or use --no-verify to skip."
+  echo ""
+  exit 1
+fi
+
+# Activate the virtual environment
+if [ -f ".venv/Scripts/activate" ]; then
+  # Windows (Git Bash)
+  . .venv/Scripts/activate
+elif [ -f ".venv/bin/activate" ]; then
+  # Mac/Linux
+  . .venv/bin/activate
+fi
+
+# Run only smoke-tagged tests — fast, critical path only
+pytest -m smoke -v --tb=short -q
+
+# Capture pytest exit code
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo ""
+  echo "❌ Smoke tests failed. Commit blocked."
+  echo "   Fix the failing tests before committing."
+  echo "   To skip in an emergency: git commit --no-verify -m 'your message'"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ Smoke tests passed. Proceeding with commit."
+echo ""
+exit 0

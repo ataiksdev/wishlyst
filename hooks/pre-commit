@@ -1,0 +1,32 @@
+#!/bin/sh
+# .git/hooks/pre-commit
+#
+# Runs smoke tests before every commit.
+# If any smoke test fails, the commit is blocked.
+#
+# To skip in an emergency: git commit --no-verify -m "your message"
+# (use sparingly — this bypasses the safety net)
+
+echo ""
+echo "🔍 Running smoke tests before commit..."
+echo ""
+
+# Run only smoke-tagged tests from the root
+pytest -m smoke -v --tb=short -q
+
+# Capture pytest exit code
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo ""
+  echo "❌ Smoke tests failed. Commit blocked."
+  echo "   Fix the failing tests before committing."
+  echo "   To skip in an emergency: git commit --no-verify -m 'your message'"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ Smoke tests passed. Proceeding with commit."
+echo ""
+exit 0

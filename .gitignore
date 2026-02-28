@@ -35,6 +35,7 @@ eggs/
 .eggs/
 backend/lib/
 backend/lib64/
+backend/scripts/manual_cleanup.py
 parts/
 sdist/
 var/
@@ -84,6 +85,8 @@ wishlyst.code-workspace
 
 # Testing
 backend/reports/
+frontend/reports/
+reports/
 
 
 to-add.md

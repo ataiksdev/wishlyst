@@ -7,6 +7,20 @@ import { Check, Star, Zap, Rocket, Heart, Users, Share2 } from "lucide-react"
 
 const changelog = [
     {
+        version: "1.3.0",
+        date: "February 28, 2026",
+        title: "The Architecture & Stability Update",
+        icon: Zap,
+        changes: [
+            "Modularized Backend API into decoupled feature routers (Auth, Wishlists, Items, Discovery, Admin, Scraper).",
+            "Implemented environment-aware Rate Limiting across all critical API endpoints.",
+            "Enhanced local development experience with automatic Proxy Rewrites in Next.js.",
+            "Revamped Backend Test Suite with private client isolation for 100% reliable test results.",
+            "Added intelligent Database Cleanup for test data with optional --no-cleanup flag.",
+            "Integrated pre-commit Smoke Test guards to ensure code quality before every git commit.",
+        ],
+    },
+    {
         version: "1.2.0",
         date: "February 10, 2026",
         title: "The Engagement Update",

@@ -103,15 +103,17 @@ jobs:
       - name: Run smoke tests
         env:
           BASE_URL: http://localhost:8000
-        run: pytest -m smoke -v --tb=short
+          DATABASE_URL: postgresql://wishlyst:wishlyst@localhost:5432/wishlyst_test
+        run: pytest ../ -m smoke -v --tb=short
 
       # ── Step 7: Run the full test suite ──────────────────────────
       - name: Run full API test suite
         env:
           BASE_URL: http://localhost:8000
+          DATABASE_URL: postgresql://wishlyst:wishlyst@localhost:5432/wishlyst_test
         run: |
           mkdir -p reports
-          pytest tests/api/ \
+          pytest ../tests/api/ \
             -v \
             --tb=short \
             --html=reports/test-report.html \
