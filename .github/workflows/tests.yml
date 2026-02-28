@@ -113,7 +113,7 @@ jobs:
           DATABASE_URL: postgresql://wishlyst:wishlyst@localhost:5432/wishlyst_test
         run: |
           mkdir -p reports
-          pytest ../tests/api/ \
+          pytest tests/api/ \
             -v \
             --tb=short \
             --html=reports/test-report.html \
