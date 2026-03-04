@@ -39,6 +39,8 @@ origins = [
     "http://127.0.0.1:3000",
     "https://wishlyst-fe-production.up.railway.app",
     "https://wishlyst.up.railway.app",
+    "https://wishlist.ng",
+    "https://www.wishlist.ng"
 ]
 
 app.add_middleware(
