@@ -87,7 +87,9 @@ wishlyst.code-workspace
 backend/reports/
 frontend/reports/
 reports/
-*.txt
+backend/*_result.txt
+backend/test_failure.txt
+backend/full_test_result_fixed.txt
 
 to-add.md
 

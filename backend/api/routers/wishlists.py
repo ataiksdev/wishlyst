@@ -71,7 +71,15 @@ async def get_wishlist_by_slug(
 
     # Record the view only for public viewers
     if not is_owner:
-        viewer_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+        xf_header = request.headers.get("x-forwarded-for")
+        if xf_header:
+            # Take the first IP in the chain (closest to the client)
+            viewer_ip = xf_header.split(",")[0].strip()
+        else:
+            viewer_ip = request.client.host if request.client else "unknown"
+            
+        # Safety truncation to match VARCHAR(45) in wishlist_views table
+        viewer_ip = viewer_ip[:45]
         user_agent = request.headers.get("user-agent", "")
         referrer = request.headers.get("referer", "")
         cur.execute(
@@ -137,7 +145,14 @@ async def like_wishlist(slug: str, request: Request, db=Depends(get_db)):
     if not wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     
-    viewer_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+    xf_header = request.headers.get("x-forwarded-for")
+    if xf_header:
+        viewer_ip = xf_header.split(",")[0].strip()
+    else:
+        viewer_ip = request.client.host if request.client else "unknown"
+    
+    # Although wishlist_likes uses TEXT for viewer_ip, we stay consistent
+    viewer_ip = viewer_ip[:45]
     
     cur.execute(
         "SELECT id FROM wishlist_likes WHERE wishlist_id = %s AND viewer_ip = %s",
