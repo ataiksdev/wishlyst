@@ -6,11 +6,11 @@ export function CTA() {
   return (
     <section className="py-24 lg:py-32 bg-card">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="rounded-3xl bg-foreground px-8 py-16 lg:px-16 lg:py-24 text-center">
-          <h2 className="font-serif text-3xl lg:text-5xl tracking-tight text-background text-balance mb-4">
+        <div className="rounded-2xl sm:rounded-3xl bg-foreground px-6 py-12 sm:px-8 sm:py-16 lg:px-16 lg:py-24 text-center">
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-5xl tracking-tight text-background text-balance mb-4">
             Start sharing what you really want
           </h2>
-          <p className="text-background/70 text-lg max-w-xl mx-auto leading-relaxed mb-8">
+          <p className="text-background/70 text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-8">
             Join thousands of people who use Wishly to make gifting easier, more personal, and way less stressful.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

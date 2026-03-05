@@ -65,13 +65,13 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm flex flex-col gap-8">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-2 sm:gap-4 text-center">
           <Link href="/" className="flex items-center gap-2 mb-2">
-            <Gift className="h-7 w-7 text-accent" />
-            <span className="text-2xl font-semibold tracking-tight text-foreground">Wishly</span>
+            <Gift className="h-6 w-6 sm:h-7 sm:w-7 text-accent" />
+            <span className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Wishly</span>
           </Link>
-          <h1 className="font-serif text-3xl text-foreground">Create your account</h1>
-          <p className="text-sm text-muted-foreground text-center">Start building wishlists in seconds</p>
+          <h1 className="font-serif text-2xl sm:text-3xl text-foreground text-balance px-4">Create your account</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Start building wishlists in seconds</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

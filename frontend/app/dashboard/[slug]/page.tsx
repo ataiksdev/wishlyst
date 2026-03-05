@@ -302,11 +302,11 @@ export default function WishlistDetailPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
-                            <h1 className="font-serif text-3xl text-foreground truncate">
+                        <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+                            <h1 className="font-serif text-2xl sm:text-3xl text-foreground truncate max-w-[70vw] sm:max-w-none">
                                 {wishlist.title}
                             </h1>
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground border border-border rounded-full px-2 py-0.5 shrink-0">
+                            <span className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground border border-border rounded-full px-2 py-0.5 shrink-0">
                                 {wishlist.is_public ? (
                                     <>
                                         <Globe className="h-3 w-3" /> Public
@@ -343,24 +343,26 @@ export default function WishlistDetailPage() {
                             variant="outline"
                             size="sm"
                             onClick={copyShareLink}
-                            className="gap-2 border-border"
+                            className="gap-2 border-border shrink-0"
                         >
                             {copied ? (
                                 <Check className="h-4 w-4 text-accent" />
                             ) : (
                                 <Copy className="h-4 w-4" />
                             )}
-                            {copied ? "Copied!" : "Copy Link"}
+                            <span className="hidden xs:inline">{copied ? "Copied!" : "Copy Link"}</span>
+                            <span className="inline xs:hidden">{copied ? "Link!" : "Link"}</span>
                         </Button>
 
                         <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetAddForm() }}>
                             <DialogTrigger asChild>
                                 <Button
                                     size="sm"
-                                    className="bg-foreground text-background hover:bg-foreground/90 gap-2"
+                                    className="bg-foreground text-background hover:bg-foreground/90 gap-2 shrink-0"
                                 >
                                     <Plus className="h-4 w-4" />
-                                    Add Item
+                                    <span className="hidden xs:inline">Add Item</span>
+                                    <span className="inline xs:hidden">Add</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md">

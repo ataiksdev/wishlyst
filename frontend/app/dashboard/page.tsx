@@ -213,20 +213,22 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col gap-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="font-serif text-3xl text-foreground">My Wishlists</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="font-serif text-2xl sm:text-3xl text-foreground">My Wishlists</h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         Create and manage your wishlists
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
                     <Dialog open={importOpen} onOpenChange={setImportOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="border-border gap-2">
+                            <Button variant="outline" className="border-border gap-2 shrink-0">
                                 <LinkIcon className="h-4 w-4" />
-                                Import Wishlist
+                                <span className="hidden xs:inline">Import</span>
+                                <span className="inline xs:hidden">Import</span>
+                                <span className="hidden sm:inline">Wishlist</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -264,9 +266,10 @@ export default function DashboardPage() {
 
                     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-foreground text-background hover:bg-foreground/90 gap-2">
+                            <Button className="bg-foreground text-background hover:bg-foreground/90 gap-2 shrink-0">
                                 <Plus className="h-4 w-4" />
-                                New Wishlist
+                                <span className="hidden xs:inline">New Wishlist</span>
+                                <span className="inline xs:hidden">New</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -461,7 +464,7 @@ export default function DashboardPage() {
                                 <CardContent>
                                     <Link
                                         href={`/dashboard/${w.slug}`}
-                                        className="flex items-center gap-4 text-sm text-muted-foreground"
+                                        className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground"
                                     >
                                         <span className="flex items-center gap-1.5">
                                             <ListChecks className="h-3.5 w-3.5" />
@@ -475,7 +478,7 @@ export default function DashboardPage() {
                                             <Heart className={`h-3.5 w-3.5 ${w.like_count > 0 ? "text-accent fill-current" : ""}`} />
                                             {w.like_count} likes
                                         </span>
-                                        <span className="flex items-center gap-1.5 ml-auto">
+                                        <span className="flex items-center gap-1.5 ml-auto sm:ml-0">
                                             {w.is_public ? (
                                                 <>
                                                     <Globe className="h-3.5 w-3.5" />

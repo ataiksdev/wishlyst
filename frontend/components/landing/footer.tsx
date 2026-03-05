@@ -12,8 +12,7 @@ export function Footer() {
     <footer className="border-t border-border bg-background py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-1 border-b border-border/50 pb-8 md:border-0 md:pb-0">
             <a href="/" className="flex items-center gap-2 mb-4">
               <Gift className="h-5 w-5 text-accent" />
               <span className="text-lg font-semibold text-foreground">Wishly</span>

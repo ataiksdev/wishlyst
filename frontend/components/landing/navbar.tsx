@@ -10,10 +10,10 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <Gift className="h-6 w-6 text-accent" />
-          <span className="text-xl font-semibold tracking-tight text-foreground">Wishly</span>
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4 lg:px-8">
+        <Link href="/" className="flex items-center gap-1.5 sm:gap-2">
+          <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
+          <span className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">Wishly</span>
         </Link>
 
         <div className="hidden md:flex md:items-center md:gap-8">

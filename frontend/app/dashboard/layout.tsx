@@ -55,23 +55,23 @@ export default function DashboardLayout({
     return (
         <div className="min-h-screen bg-background">
             <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-                <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-                    <Link href="/dashboard" className="flex items-center gap-2">
-                        <Gift className="h-6 w-6 text-accent" />
-                        <span className="text-xl font-semibold tracking-tight text-foreground">
+                <nav className="mx-auto flex max-width-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+                    <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
+                        <span className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
                             Wishly
                         </span>
                     </Link>
 
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-muted-foreground hidden sm:inline">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <span className="text-xs sm:text-sm text-muted-foreground hidden xs:inline">
                             {user.name}
                         </span>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleLogout}
-                            className="text-muted-foreground hover:text-foreground gap-2"
+                            className="text-muted-foreground hover:text-foreground h-8 sm:h-9 px-2 sm:px-3 gap-1.5"
                         >
                             <LogOut className="h-4 w-4" />
                             <span className="hidden sm:inline">Log out</span>

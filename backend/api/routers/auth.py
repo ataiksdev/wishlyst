@@ -38,9 +38,8 @@ async def register(request: Request, body: UserRegister, response: Response, db=
     db.commit()
 
     # Set HTTP-only cookie
-    is_prod = os.environ.get("ENV", "production") == "production"
-    # Use secure if in production or if requested via https
-    use_secure = is_prod or request.url.scheme == "https"
+    # Use secure only if requested via https (important for local testing over http)
+    use_secure = request.url.scheme == "https"
     
     response.set_cookie(
         key="session_token",
@@ -73,8 +72,8 @@ async def login(request: Request, body: UserLogin, response: Response, db=Depend
     db.commit()
 
     # Set HTTP-only cookie
-    is_prod = os.environ.get("ENV", "production") == "production"
-    use_secure = is_prod or request.url.scheme == "https"
+    # Use secure only if requested via https
+    use_secure = request.url.scheme == "https"
     
     response.set_cookie(
         key="session_token",

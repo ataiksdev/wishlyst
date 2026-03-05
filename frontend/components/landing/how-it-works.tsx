@@ -32,7 +32,7 @@ export function HowItWorks() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {steps.map((step, index) => (
             <div key={step.number} className="relative flex flex-col items-center text-center">
               {/* Connector line */}

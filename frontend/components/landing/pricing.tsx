@@ -66,15 +66,14 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-2xl border p-8 flex flex-col ${
-                plan.highlighted
-                  ? "border-accent bg-foreground text-background shadow-xl scale-[1.02]"
+              className={`rounded-2xl border p-6 sm:p-8 flex flex-col ${plan.highlighted
+                  ? "border-accent bg-foreground text-background shadow-xl sm:scale-[1.02]"
                   : "border-border bg-card text-card-foreground"
-              }`}
+                }`}
             >
               <div className="mb-6">
                 <h3 className={`text-lg font-semibold ${plan.highlighted ? "text-background" : "text-foreground"}`}>
@@ -105,11 +104,10 @@ export function Pricing() {
               </ul>
 
               <Button
-                className={`w-full py-5 ${
-                  plan.highlighted
+                className={`w-full py-5 ${plan.highlighted
                     ? "bg-accent text-accent-foreground hover:bg-accent/90"
                     : "bg-foreground text-background hover:bg-foreground/90"
-                }`}
+                  }`}
                 asChild
               >
                 <Link href="/register">{plan.cta}</Link>

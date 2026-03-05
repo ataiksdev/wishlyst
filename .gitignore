@@ -87,7 +87,7 @@ wishlyst.code-workspace
 backend/reports/
 frontend/reports/
 reports/
-
+*.txt
 
 to-add.md
 

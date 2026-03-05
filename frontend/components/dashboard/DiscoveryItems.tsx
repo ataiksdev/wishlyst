@@ -131,7 +131,7 @@ export function DiscoveryItems({ mode = "all" }: { mode?: "all" | "featured" | "
                             <Link
                                 key={idx}
                                 href={`/w/${collection.slug}`}
-                                className="min-w-[280px] max-w-[280px] shrink-0 group relative overflow-hidden rounded-2xl border border-border bg-card/50 backdrop-blur-sm hover:border-accent/40 transition-all duration-300"
+                                className="min-w-[240px] sm:min-w-[280px] max-w-[280px] shrink-0 group relative overflow-hidden rounded-2xl border border-border bg-card/50 backdrop-blur-sm hover:border-accent/40 transition-all duration-300"
                             >
                                 <div className="aspect-[16/9] bg-muted relative">
                                     {collection.cover_image ? (
@@ -172,7 +172,7 @@ export function DiscoveryItems({ mode = "all" }: { mode?: "all" | "featured" | "
                         <TrendingUp className="h-5 w-5 text-accent" />
                         <h2 className="font-serif text-2xl text-foreground">Community Favorites</h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                         {trending.slice(0, 8).map((item, idx) => (
                             <DiscoveryCard
                                 key={idx}
@@ -232,7 +232,7 @@ function DiscoveryCard({ item, onAdd, isGrid = false }: { item: DiscoveryItem; o
     const currency = symbols[item.currency] || item.currency + " "
 
     return (
-        <Card className={`${isGrid ? 'w-full' : 'min-w-[200px] max-w-[200px] shrink-0'} overflow-hidden border-border bg-card/50 backdrop-blur-sm group hover:border-accent/40 transition-all duration-300`}>
+        <Card className={`${isGrid ? 'w-full' : 'min-w-[170px] sm:min-w-[200px] max-w-[200px] shrink-0'} overflow-hidden border-border bg-card/50 backdrop-blur-sm group hover:border-accent/40 transition-all duration-300`}>
             <div className="aspect-square bg-muted relative overflow-hidden">
                 {item.image_url ? (
                     <img
@@ -245,8 +245,8 @@ function DiscoveryCard({ item, onAdd, isGrid = false }: { item: DiscoveryItem; o
                         <Plus className="h-8 w-8" />
                     </div>
                 )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
-                    <Button size="sm" onClick={onAdd} className="bg-white text-black hover:bg-white/90 rounded-full py-1 h-auto text-xs font-bold">
+                <div className="absolute inset-0 bg-black/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                    <Button size="sm" onClick={onAdd} className="bg-white text-black hover:bg-white/90 rounded-full py-1 h-auto text-[10px] sm:text-xs font-bold">
                         Add to List
                     </Button>
                 </div>

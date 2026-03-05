@@ -214,9 +214,9 @@ export default function PublicWishlistPage() {
     return (
         <div className="min-h-screen bg-background">
             {/* Simple header */}
-            <header className="border-b border-border bg-background/80 backdrop-blur-md">
-                <nav className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-                    <Link href="/" className="flex items-center gap-2">
+            <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+                <nav className="mx-auto flex max-w-3xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+                    <Link href="/" className="flex items-center gap-1.5 sm:gap-2">
                         <Gift className="h-5 w-5 text-accent" />
                         <span className="text-lg font-semibold tracking-tight text-foreground">
                             Wishly
@@ -224,7 +224,7 @@ export default function PublicWishlistPage() {
                     </Link>
                     <Button
                         size="sm"
-                        className="bg-foreground text-background hover:bg-foreground/90"
+                        className="bg-foreground text-background hover:bg-foreground/90 h-8 sm:h-9 px-3 sm:px-4"
                         asChild
                     >
                         <Link href="/register">Create Yours</Link>
@@ -234,22 +234,22 @@ export default function PublicWishlistPage() {
 
             <main className="mx-auto max-w-3xl px-6 py-10">
                 {/* Wishlist header */}
-                <div className="text-center mb-10">
-                    <h1 className="font-serif text-4xl text-foreground">
+                <div className="text-center mb-8 sm:mb-10">
+                    <h1 className="font-serif text-2xl sm:text-4xl text-foreground px-2">
                         {wishlist.owner_name ? `${wishlist.owner_name}\u2019s ` : ""}{wishlist.title}{!wishlist.title.toLowerCase().includes("wishlist") ? " Wishlist" : ""}
                     </h1>
                     {wishlist.description && (
-                        <p className="text-muted-foreground mt-2 text-lg">
+                        <p className="text-muted-foreground mt-2 text-base sm:text-lg px-4 truncate-3-lines">
                             {wishlist.description}
                         </p>
                     )}
-                    <div className="flex items-center justify-center gap-4 mt-4 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 text-xs sm:text-sm text-muted-foreground px-4">
                         <span className="flex items-center gap-1">
                             <Eye className="h-3.5 w-3.5" />
                             {wishlist.view_count} views
                         </span>
                         <span>
-                            {reservedCount} of {wishlist.items.length} reserved
+                            {reservedCount}/{wishlist.items.length} reserved
                         </span>
                         <button
                             onClick={handleLike}
@@ -271,7 +271,8 @@ export default function PublicWishlistPage() {
                                 className="flex items-center gap-1 hover:text-accent transition-colors"
                             >
                                 <Copy className="h-3.5 w-3.5" />
-                                Clone to my Wishly
+                                <span className="hidden xs:inline">Clone to my Wishly</span>
+                                <span className="inline xs:hidden">Clone</span>
                             </button>
                         )}
                     </div>
@@ -291,7 +292,7 @@ export default function PublicWishlistPage() {
                             key={item.id}
                             className={`transition-shadow hover:shadow-sm ${item.is_claimed ? "opacity-60" : ""}`}
                         >
-                            <CardContent className="flex items-center gap-4 p-4">
+                            <CardContent className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
                                 {/* Thumbnail / Status */}
                                 {item.image_url ? (
                                     <img
@@ -301,23 +302,23 @@ export default function PublicWishlistPage() {
                                                 : `https://${item.image_url}`
                                         }
                                         alt={item.name}
-                                        className={`h-12 w-12 rounded-xl object-cover shrink-0 border border-border ${item.is_claimed ? "opacity-50" : ""}`}
+                                        className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl object-cover shrink-0 border border-border ${item.is_claimed ? "opacity-50" : ""}`}
                                     />
                                 ) : (
                                     <div
-                                        className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${item.is_claimed
+                                        className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${item.is_claimed
                                             ? "bg-accent/15 text-accent"
                                             : "bg-muted text-muted-foreground"
                                             }`}
                                     >
                                         {item.is_claimed ? (
-                                            <Check className="h-5 w-5" />
+                                            <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                                         ) : item.tag ? (
-                                            <span className="text-sm font-semibold">
+                                            <span className="text-xs sm:text-sm font-semibold">
                                                 {item.tag[0].toUpperCase()}
                                             </span>
                                         ) : (
-                                            <Tag className="h-4 w-4" />
+                                            <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         )}
                                     </div>
                                 )}
@@ -325,19 +326,16 @@ export default function PublicWishlistPage() {
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <p
-                                        className={`font-medium truncate ${item.is_claimed ? "line-through text-muted-foreground" : "text-foreground"}`}
+                                        className={`font-medium text-sm sm:text-base truncate ${item.is_claimed ? "line-through text-muted-foreground" : "text-foreground"}`}
                                     >
                                         {item.name}
                                     </p>
-                                    {item.reservations_count && item.reservations_count > 0 && (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="text-[10px] font-medium tracking-wide uppercase text-accent bg-accent/10 rounded-full px-2 py-0.5 flex items-center gap-1">
-                                                Reserved {item.reservations_count} {item.reservations_count === 1 ? 'time' : 'times'}
+                                    <div className="flex items-center gap-2 sm:gap-3 mt-1 text-[11px] sm:text-sm text-muted-foreground">
+                                        {item.price !== null && (
+                                            <span className="font-semibold text-accent/90">
+                                                {formatPrice(item.price, item.currency)}
                                             </span>
-                                        </div>
-                                    )}
-                                    <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
-                                        {item.tag && <span>{item.tag}</span>}
+                                        )}
                                         {item.url && (
                                             <a
                                                 href={
@@ -350,38 +348,29 @@ export default function PublicWishlistPage() {
                                                 className="flex items-center gap-1 hover:text-accent transition-colors"
                                             >
                                                 <ExternalLink className="h-3 w-3" />
-                                                View
+                                                <span className="hidden xs:inline">Link</span>
                                             </a>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Price */}
-                                {item.price !== null && (
-                                    <span
-                                        className={`text-sm font-medium shrink-0 ${item.is_claimed ? "text-muted-foreground" : "text-foreground"}`}
-                                    >
-                                        {formatPrice(item.price, item.currency)}
-                                    </span>
-                                )}
-
                                 {/* Reserve / Unreserve */}
-                                <div className="flex gap-2">
+                                <div className="flex flex-col xs:flex-row gap-1.5">
                                     <Button
                                         size="sm"
                                         onClick={() => openReserve(item)}
-                                        className="shrink-0 bg-foreground text-background hover:bg-foreground/90 text-xs"
+                                        className="h-8 sm:h-9 px-3 sm:px-4 bg-foreground text-background hover:bg-foreground/90 text-[10px] sm:text-xs font-bold uppercase tracking-wider"
                                     >
-                                        Reserve
+                                        {item.is_claimed ? "Gift Again" : "Reserve"}
                                     </Button>
                                     {item.is_claimed && (
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => openUnreserve(item)}
-                                            className="shrink-0 text-xs border-border"
+                                            className="h-8 sm:h-9 px-2 text-[10px] border-border opacity-70 hover:opacity-100"
                                         >
-                                            Unreserve
+                                            Undo
                                         </Button>
                                     )}
                                 </div>
