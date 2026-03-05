@@ -7,7 +7,12 @@ const nextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
+    let backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
+
+    // Ensure the URL has a protocol (required by Next.js rewrites)
+    if (backendUrl && !backendUrl.startsWith('http')) {
+      backendUrl = `https://${backendUrl}`
+    }
 
     return [
       {

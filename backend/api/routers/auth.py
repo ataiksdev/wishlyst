@@ -38,16 +38,16 @@ async def register(request: Request, body: UserRegister, response: Response, db=
     db.commit()
 
     # Set HTTP-only cookie
-    is_prod = os.environ.get("ENV", "development") == "production"
-    is_remote = "localhost" not in str(request.base_url) and "127.0.0.1" not in str(request.base_url)
-    use_secure = is_prod or is_remote
+    is_prod = os.environ.get("ENV", "production") == "production"
+    # Use secure if in production or if requested via https
+    use_secure = is_prod or request.url.scheme == "https"
     
     response.set_cookie(
         key="session_token",
         value=token,
         httponly=True,
         secure=use_secure,
-        samesite="none" if use_secure else "lax",
+        samesite="lax", # 'Lax' is best for same-site architectures (using rewrites)
         max_age=30 * 24 * 60 * 60 # 30 days
     )
 
@@ -73,16 +73,15 @@ async def login(request: Request, body: UserLogin, response: Response, db=Depend
     db.commit()
 
     # Set HTTP-only cookie
-    is_prod = os.environ.get("ENV", "development") == "production"
-    is_remote = "localhost" not in str(request.base_url) and "127.0.0.1" not in str(request.base_url)
-    use_secure = is_prod or is_remote
+    is_prod = os.environ.get("ENV", "production") == "production"
+    use_secure = is_prod or request.url.scheme == "https"
     
     response.set_cookie(
         key="session_token",
         value=token,
         httponly=True,
         secure=use_secure,
-        samesite="none" if use_secure else "lax",
+        samesite="lax", # Changed to 'Lax' for better mobile compatibility
         max_age=30 * 24 * 60 * 60
     )
 

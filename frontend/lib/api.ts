@@ -1,19 +1,14 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
-// Helper to get token is no longer needed as we use cookies
-// function getToken(): string | null { ... }
-
+// paths should be relative (e.g., /api/...) to trigger Next.js rewrites
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  // No need to manually attach Authorization header
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(path, {
     ...options,
     headers,
     credentials: "include", // Important: send cookies with request
