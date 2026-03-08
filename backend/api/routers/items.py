@@ -92,7 +92,10 @@ async def delete_item(
 async def claim_item(slug: str, item_id: str, body: ClaimItem, db=Depends(get_db)):
     cur = db.cursor()
     cur.execute(
-        "SELECT i.id FROM wishlist_items i JOIN wishlists w ON i.wishlist_id = w.id WHERE w.slug = %s AND i.id = %s AND w.is_public = true",
+        """SELECT i.id, i.name, w.id as wishlist_id, w.user_id as owner_id, w.title as wishlist_title
+           FROM wishlist_items i
+           JOIN wishlists w ON i.wishlist_id = w.id
+           WHERE w.slug = %s AND i.id = %s AND w.is_public = true""",
         (slug, item_id),
     )
     item = cur.fetchone()
@@ -108,6 +111,22 @@ async def claim_item(slug: str, item_id: str, body: ClaimItem, db=Depends(get_db
     cur.execute(
         "UPDATE wishlist_items SET is_claimed = true, claimed_by = %s, claimed_at = NOW() WHERE id = %s",
         (body.name, item_id),
+    )
+
+    # Notify the wishlist owner
+    reserver_display = body.name or "Someone"
+    cur.execute(
+        """
+        INSERT INTO notifications (user_id, type, title, message, wishlist_id, item_id)
+        VALUES (%s, 'reservation', %s, %s, %s, %s)
+        """,
+        (
+            item["owner_id"],
+            f"{reserver_display} reserved an item on your wishlist",
+            f"\u201c{item['name']}\u201d on \u201c{item['wishlist_title']}\u201d was reserved by {reserver_display}.",
+            item["wishlist_id"],
+            item_id,
+        ),
     )
     
     db.commit()

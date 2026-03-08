@@ -90,6 +90,25 @@ async def get_wishlist_by_slug(
             "UPDATE wishlists SET view_count = view_count + 1 WHERE id = %s",
             (wishlist["id"],),
         )
+        # Notify owner — once per unique IP per wishlist to avoid spam
+        cur.execute(
+            "SELECT 1 FROM wishlist_views WHERE wishlist_id = %s AND viewer_ip = %s LIMIT 2",
+            (wishlist["id"], viewer_ip),
+        )
+        is_first_view_from_ip = len(cur.fetchall()) <= 1  # the INSERT above is already committed
+        if is_first_view_from_ip:
+            cur.execute(
+                """
+                INSERT INTO notifications (user_id, type, title, message, wishlist_id)
+                VALUES (%s, 'view', %s, %s, %s)
+                """,
+                (
+                    wishlist["user_id"],
+                    "Someone viewed your wishlist",
+                    f"A new person checked out \u201c{wishlist['title']}\u201d.",
+                    wishlist["id"],
+                ),
+            )
 
     # Get items
     cur.execute(
@@ -167,10 +186,24 @@ async def like_wishlist(slug: str, request: Request, db=Depends(get_db)):
             (wishlist["id"], viewer_ip),
         )
         cur.execute(
-            "UPDATE wishlists SET like_count = like_count + 1 WHERE id = %s RETURNING like_count",
+            "UPDATE wishlists SET like_count = like_count + 1 WHERE id = %s RETURNING like_count, user_id, title",
             (wishlist["id"],),
         )
-        new_count = cur.fetchone()["like_count"]
+        row = cur.fetchone()
+        new_count = row["like_count"]
+        # Notify the owner
+        cur.execute(
+            """
+            INSERT INTO notifications (user_id, type, title, message, wishlist_id)
+            VALUES (%s, 'like', %s, %s, %s)
+            """,
+            (
+                row["user_id"],
+                "Someone liked your wishlist",
+                f"\u201c{row['title']}\u201d received a new like! \u2665",
+                wishlist["id"],
+            ),
+        )
         db.commit()
         return {"like_count": new_count}
     except Exception as e:

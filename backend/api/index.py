@@ -9,7 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 load_dotenv()
 
 from .limiter import limiter
-from .routers import auth, wishlists, items, discovery, admin, scraper
+from .routers import auth, wishlists, items, discovery, admin, scraper, notifications
 
 # ── App Setup ────────────────────────────────────────────────────────
 
@@ -76,6 +76,7 @@ app.include_router(items.router)
 app.include_router(discovery.router)
 app.include_router(admin.router)
 app.include_router(scraper.router)
+app.include_router(notifications.router)
 
 # ── Health Check & Debug ─────────────────────────────────────────────
 

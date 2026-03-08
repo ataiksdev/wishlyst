@@ -401,3 +401,33 @@ export async function createAdminPromotedWishlist(wishlist_id: string, category 
 export async function deleteAdminPromotedWishlist(id: string) {
   return request(`/api/admin/promoted/wishlists/${id}`, { method: "DELETE" });
 }
+
+// ── Notifications ──
+
+export interface AppNotification {
+  id: string;
+  user_id: string;
+  type: "reservation" | "like" | "view";
+  title: string;
+  message: string;
+  wishlist_id: string | null;
+  item_id: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export async function getNotifications() {
+  return request<AppNotification[]>("/api/notifications");
+}
+
+export async function getUnreadCount() {
+  return request<{ count: number }>("/api/notifications/unread-count");
+}
+
+export async function markNotificationRead(id: string) {
+  return request(`/api/notifications/${id}/read`, { method: "PUT" });
+}
+
+export async function markAllNotificationsRead() {
+  return request("/api/notifications/read-all", { method: "POST" });
+}

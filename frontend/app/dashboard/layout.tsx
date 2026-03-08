@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { Gift, LogOut, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMe, logout } from "@/lib/api"
+import { NotificationBell } from "@/components/notification-bell"
 
 interface User {
     id: string
@@ -63,10 +64,11 @@ export default function DashboardLayout({
                         </span>
                     </Link>
 
-                    <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <span className="text-xs sm:text-sm text-muted-foreground hidden xs:inline">
                             {user.name}
                         </span>
+                        <NotificationBell />
                         <Button
                             variant="ghost"
                             size="sm"
