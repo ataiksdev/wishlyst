@@ -46,7 +46,7 @@ export function Hero() {
               {/* Card Header */}
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="font-serif text-xl text-card-foreground">Ngozi&apos;s Birthday</h3>
+                  <h3 className="font-serif text-xl text-card-foreground">Ose&apos;s Birthday</h3>
                   <p className="text-sm text-muted-foreground mt-0.5">Updated 2 days ago</p>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
     ArrowLeft,
@@ -69,6 +69,7 @@ import {
 export default function WishlistDetailPage() {
     const params = useParams()
     const router = useRouter()
+    const searchParams = useSearchParams()
     const slug = params.slug as string
 
     const [wishlist, setWishlist] = useState<WishlistDetail | null>(null)
@@ -123,6 +124,12 @@ export default function WishlistDetailPage() {
     useEffect(() => {
         load()
     }, [slug])
+
+    useEffect(() => {
+        if (searchParams.get("add") === "true") {
+            setAddOpen(true)
+        }
+    }, [searchParams])
 
     function resetAddForm() {
         setItemName("")
@@ -639,11 +646,31 @@ export default function WishlistDetailPage() {
                             <CardContent className="flex items-center gap-4 p-4">
                                 {/* Thumbnail / Status indicator */}
                                 {item.image_url ? (
-                                    <img
-                                        src={item.image_url.startsWith("http") ? item.image_url : `https://${item.image_url}`}
-                                        alt={item.name}
-                                        className={`h-10 w-10 rounded-xl object-cover shrink-0 border border-border ${item.is_claimed ? "opacity-50" : ""}`}
-                                    />
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <button className="shrink-0 outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl relative group">
+                                                <img
+                                                    src={item.image_url.startsWith("http") ? item.image_url : `https://${item.image_url}`}
+                                                    alt={item.name}
+                                                    className={`h-10 w-10 rounded-xl object-cover border border-border group-hover:opacity-80 transition-opacity ${item.is_claimed ? "opacity-50" : ""}`}
+                                                />
+                                                <div className="absolute inset-0 bg-black/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none" />
+                                            </button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-4xl border-none bg-transparent p-0 shadow-none">
+                                            <DialogHeader className="sr-only">
+                                                <DialogTitle>{item.name}</DialogTitle>
+                                                <DialogDescription>Image of {item.name}</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="relative w-full h-[80vh] flex items-center justify-center">
+                                                <img
+                                                    src={item.image_url.startsWith("http") ? item.image_url : `https://${item.image_url}`}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 ) : (
                                     <div
                                         className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${item.is_claimed

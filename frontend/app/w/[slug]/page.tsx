@@ -28,6 +28,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -295,15 +296,39 @@ export default function PublicWishlistPage() {
                             <CardContent className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
                                 {/* Thumbnail / Status */}
                                 {item.image_url ? (
-                                    <img
-                                        src={
-                                            item.image_url.startsWith("http")
-                                                ? item.image_url
-                                                : `https://${item.image_url}`
-                                        }
-                                        alt={item.name}
-                                        className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl object-cover shrink-0 border border-border ${item.is_claimed ? "opacity-50" : ""}`}
-                                    />
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <button className="shrink-0 outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg sm:rounded-xl relative group">
+                                                <img
+                                                    src={
+                                                        item.image_url.startsWith("http")
+                                                            ? item.image_url
+                                                            : `https://${item.image_url}`
+                                                    }
+                                                    alt={item.name}
+                                                    className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl object-cover border border-border ${item.is_claimed ? "opacity-50" : ""} group-hover:opacity-80 transition-opacity`}
+                                                />
+                                                <div className="absolute inset-0 bg-black/10 rounded-lg sm:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none" />
+                                            </button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-4xl border-none bg-transparent p-0 shadow-none">
+                                            <DialogHeader className="sr-only">
+                                                <DialogTitle>{item.name}</DialogTitle>
+                                                <DialogDescription>Image of {item.name}</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="relative w-full h-[80vh] flex items-center justify-center">
+                                                <img
+                                                    src={
+                                                        item.image_url.startsWith("http")
+                                                            ? item.image_url
+                                                            : `https://${item.image_url}`
+                                                    }
+                                                    alt={item.name}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 ) : (
                                     <div
                                         className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${item.is_claimed

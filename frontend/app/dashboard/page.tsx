@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
     Plus,
@@ -59,6 +60,7 @@ export default function DashboardPage() {
     const [wishlists, setWishlists] = useState<Wishlist[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+    const router = useRouter()
 
     // Create dialog state
     const [createOpen, setCreateOpen] = useState(false)
@@ -107,12 +109,12 @@ export default function DashboardPage() {
         e.preventDefault()
         setCreating(true)
         try {
-            await createWishlist(createTitle, createDesc || undefined, createPublic)
+            const newList = await createWishlist(createTitle, createDesc || undefined, createPublic)
             setCreateOpen(false)
             setCreateTitle("")
             setCreateDesc("")
             setCreatePublic(true)
-            await load()
+            router.push(`/dashboard/${newList.slug}?add=true`)
         } catch {
             setError("Failed to create wishlist")
         } finally {
@@ -301,7 +303,7 @@ export default function DashboardPage() {
                                         </Label>
                                         <Input
                                             id="create-desc"
-                                            placeholder="Things I'd love for my birthday"
+                                            placeholder="Describe: add a short description of your list"
                                             value={createDesc}
                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCreateDesc(e.target.value)}
                                             className="bg-card border-border"
