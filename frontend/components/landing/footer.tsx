@@ -4,7 +4,7 @@ import { Gift } from "lucide-react"
 const footerLinks = {
   Product: ["Features", "Pricing", "Examples", "Changelog"],
   Company: ["About", "Blog", "Careers", "Press"],
-  Resources: ["Help Center", "Privacy", "Terms", "Contact"],
+  Resources: ["Help Center", "Privacy Policy", "Terms of Service", "Cookie Policy", "Contact Us"],
 }
 
 export function Footer() {
@@ -17,9 +17,14 @@ export function Footer() {
               <Gift className="h-5 w-5 text-accent" />
               <span className="text-lg font-semibold text-foreground">Wishly</span>
             </a>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-4">
               The simplest way to create, share, and track wishlists with the people you love.
             </p>
+            <div className="text-xs text-muted-foreground/80 space-y-1">
+              <p>Registered Company Name</p>
+              <p>RC Number: 000000</p>
+              <p>Registered Address, Nigeria</p>
+            </div>
           </div>
 
           {/* Links */}
@@ -31,6 +36,10 @@ export function Footer() {
                   let href = "#";
                   if (link === "Features") href = "/features";
                   if (link === "Changelog") href = "/changelog";
+                  if (link === "Privacy Policy") href = "/privacy-policy";
+                  if (link === "Terms of Service") href = "/terms";
+                  if (link === "Cookie Policy") href = "/cookie-policy";
+                  if (link === "Contact Us") href = "mailto:support@wishlist.ng";
 
                   return (
                     <li key={link}>
@@ -50,9 +59,9 @@ export function Footer() {
             2026 Wishly. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cookies</a>
+            <a href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
+            <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a>
+            <a href="/cookie-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cookies</a>
           </div>
         </div>
       </div>
