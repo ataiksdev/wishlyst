@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from ..database import get_db
-from ..schemas import UserRegister, UserLogin, PasswordResetRequest, PasswordResetConfirm
+from ..schemas import UserRegister, UserLogin, PasswordResetRequest, PasswordResetConfirm, UserResponse
 from ..utils import hash_password, verify_password, create_session_token, get_limit
 from ..deps import get_current_user
 from ..limiter import limiter
@@ -105,8 +105,8 @@ async def logout(
 
 @router.get("/me")
 @limiter.limit(get_limit("60/minute"))
-async def get_me(request: Request, user=Depends(get_current_user)):
-    return {"id": str(user["id"]), "email": user["email"], "name": user["name"], "is_admin": user.get("is_admin", False)}
+async def get_me(request: Request, user=Depends(get_current_user)) -> UserResponse:
+    return {"id": str(user["id"]), "email": user["email"], "name": user["name"], "is_admin": user.get("is_admin", False), "is_premium": user.get("is_premium", False)}
 
 @router.post("/forgot-password/question")
 async def get_reset_question(body: PasswordResetRequest, db=Depends(get_db)):

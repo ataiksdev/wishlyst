@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 
 class UserRegister(BaseModel):
     email: str
@@ -22,6 +23,13 @@ class AdminPasswordReset(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    is_admin: bool
+    is_premium: bool
 
 class WishlistCreate(BaseModel):
     title: str
@@ -84,3 +92,11 @@ class PromotedWishlistUpdate(BaseModel):
 
 class ScrapeRequest(BaseModel):
     url: str
+
+class AnalyticsResponse(BaseModel):
+    wishlist_id: int
+    title: str
+    view_count: int
+    like_count: int
+    created_at: datetime
+    owner_name: str

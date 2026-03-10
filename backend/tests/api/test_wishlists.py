@@ -12,6 +12,63 @@ import uuid
 import pytest
 
 
+@pytest.fixture
+def premium_user(auth_client, db_session):
+    """Fixture to create a premium user and return their details."""
+    user_data = {
+        "email": "premium_user@wishlyst-test.com",
+        "password": "password123",
+        "name": "Premium User",
+        "is_premium": True
+    }
+    response = auth_client.post("/api/auth/register", json=user_data)
+    assert response.status_code == 200
+
+    # Extract token from cookie
+    token = response.cookies.get("session")
+    assert token is not None
+
+    db_session.execute(
+        "UPDATE users SET is_premium = TRUE WHERE email = :email",
+        {"email": user_data["email"]}
+    )
+    db_session.commit()
+
+    user_data["token"] = token
+    return user_data
+
+
+@pytest.fixture
+def non_premium_user(auth_client):
+    """Fixture to create a non-premium user and return their details."""
+    user_data = {
+        "email": "non_premium_user@wishlyst-test.com",
+        "password": "password123",
+        "name": "Non-Premium User",
+        "is_premium": False
+    }
+    response = auth_client.post("/api/auth/register", json=user_data)
+    assert response.status_code == 200
+
+    # Extract token from cookie
+    token = response.cookies.get("session")
+    assert token is not None
+
+    user_data["token"] = token
+    return user_data
+
+
+@pytest.fixture
+def db_session():
+    """Fixture to provide a database session for tests."""
+    from backend.api.database import get_db
+    db = next(get_db())
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 class TestCreateWishlist:
     """Tests for POST /api/wishlists"""
 
@@ -228,3 +285,44 @@ class TestLikeWishlist:
 
         assert response.status_code == 400
         assert "already liked" in response.json()["detail"].lower()
+
+
+class TestAnalyticsEndpoint:
+    """Tests for GET /api/wishlists/analytics"""
+
+    def test_analytics_endpoint_premium_user(self, client, premium_user, db_session):
+        """Test that premium users can access the analytics endpoint."""
+        # Simulate a premium user
+        client.headers.update({"Authorization": f"Bearer {premium_user['token']}"})
+
+        # Create test data
+        db_session.execute(
+            """
+            INSERT INTO wishlists (id, user_id, title, view_count, like_count, created_at)
+            VALUES (1, :user_id, 'Test Wishlist', 10, 5, '2026-03-01 12:00:00')
+            """,
+            {"user_id": premium_user["id"]}
+        )
+        db_session.commit()
+
+        # Call the analytics endpoint
+        response = client.get("/api/wishlists/analytics")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["wishlist_id"] == 1
+        assert data[0]["title"] == "Test Wishlist"
+        assert data[0]["view_count"] == 10
+        assert data[0]["like_count"] == 5
+
+    def test_analytics_endpoint_non_premium_user(self, client, non_premium_user):
+        """Test that non-premium users cannot access the analytics endpoint."""
+        # Simulate a non-premium user
+        client.headers.update({"Authorization": f"Bearer {non_premium_user['token']}"})
+
+        # Call the analytics endpoint
+        response = client.get("/api/wishlists/analytics")
+
+        assert response.status_code == 403
+        assert response.json()["detail"] == "Access restricted to premium users."

@@ -268,6 +268,19 @@ export async function getWishlistAnalytics(wishlistId: string) {
   return request<WishlistAnalytics>(`/api/wishlists/${wishlistId}/analytics`);
 }
 
+export interface PremiumUserAnalytics {
+  wishlist_id: string;
+  title: string;
+  view_count: number;
+  like_count: number;
+  created_at: string;
+  owner_name: string;
+}
+
+export async function getPremiumUserAnalytics() {
+  return request<PremiumUserAnalytics[]>("/api/wishlists/analytics");
+}
+
 // ── Admin ──
 
 export interface AdminStats {

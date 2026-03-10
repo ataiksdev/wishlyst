@@ -1,9 +1,12 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from ..database import get_db
-from ..schemas import WishlistCreate, WishlistUpdate, WishlistClone
+from ..schemas import WishlistCreate, WishlistUpdate, WishlistClone, AnalyticsResponse
 from ..utils import generate_slug
 from ..deps import get_current_user, get_user_if_authenticated
+from typing import List
+from pydantic import BaseModel
+from datetime import datetime
 
 router = APIRouter(prefix="/api/wishlists", tags=["Wishlists"])
 
@@ -361,3 +364,87 @@ async def get_wishlist_analytics(
         "daily_views": daily_views,
         "top_referrers": top_referrers,
     }
+
+@router.get("/{wishlist_id}/analytics/premium")
+async def get_wishlist_analytics_premium(
+    wishlist_id: str,
+    user=Depends(get_current_user),
+    db=Depends(get_db),
+):
+    cur = db.cursor()
+    cur.execute("SELECT id, user_id, view_count, title FROM wishlists WHERE id = %s", (wishlist_id,))
+    wishlist = cur.fetchone()
+    if not wishlist:
+        raise HTTPException(status_code=404, detail="Wishlist not found")
+    if str(wishlist["user_id"]) != str(user["id"]):
+        raise HTTPException(status_code=403, detail="Not your wishlist")
+
+    cur.execute(
+        """
+        SELECT DATE(viewed_at) as date, COUNT(*) as views
+        FROM wishlist_views
+        WHERE wishlist_id = %s AND viewed_at >= NOW() - INTERVAL '30 days'
+        GROUP BY DATE(viewed_at)
+        ORDER BY date ASC
+        """,
+        (wishlist_id,),
+    )
+    daily_views = [{"date": str(row["date"]), "views": row["views"]} for row in cur.fetchall()]
+
+    cur.execute(
+        "SELECT COUNT(DISTINCT viewer_ip) as unique_viewers FROM wishlist_views WHERE wishlist_id = %s",
+        (wishlist_id,),
+    )
+    unique_viewers = cur.fetchone()["unique_viewers"]
+
+    cur.execute(
+        """
+        SELECT referrer, COUNT(*) as count
+        FROM wishlist_views
+        WHERE wishlist_id = %s AND referrer IS NOT NULL AND referrer != ''
+        GROUP BY referrer
+        ORDER BY count DESC
+        LIMIT 5
+        """,
+        (wishlist_id,),
+    )
+    top_referrers = [dict(row) for row in cur.fetchall()]
+
+    return {
+        "wishlist_id": str(wishlist_id),
+        "title": wishlist["title"],
+        "total_views": wishlist["view_count"],
+        "unique_viewers": unique_viewers,
+        "daily_views": daily_views,
+        "top_referrers": top_referrers,
+    }
+
+@router.get("/analytics", response_model=List[AnalyticsResponse])
+async def get_analytics(user: dict = Depends(get_current_user), db=Depends(get_db)):
+    """Fetch analytics data for premium users."""
+    if not user.get("is_premium"):
+        raise HTTPException(status_code=403, detail="Access restricted to premium users.")
+
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT w.id AS wishlist_id, w.title, w.view_count, w.like_count, w.created_at, u.name AS owner_name
+        FROM wishlists w
+        JOIN users u ON w.user_id = u.id
+        WHERE u.is_premium = TRUE
+        ORDER BY w.created_at DESC
+        """
+    )
+    analytics_data = cur.fetchall()
+
+    return [
+        AnalyticsResponse(
+            wishlist_id=row["wishlist_id"],
+            title=row["title"],
+            view_count=row["view_count"],
+            like_count=row["like_count"],
+            created_at=row["created_at"],
+            owner_name=row["owner_name"]
+        )
+        for row in analytics_data
+    ]
